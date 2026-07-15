@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Consumíveis · VX Case</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#0a0b0d;
+    --bg-grad:radial-gradient(circle at 20% -10%, #0f1c30 0%, #0a0b0d 45%);
+    --panel:#131518;
+    --panel2:#191b1f;
+    --border:#262930;
+    --text:#eef0f4;
+    --muted:#8d8f99;
+    --accent:#4f8cff;
+    --accent-grad:linear-gradient(135deg,#4f8cff 0%,#1f5ce0 100%);
+    --ok:#38e2a8;
+    --repor:#e8c14f;
+    --urgente:#ff9f43;
+    --critico:#ff6b6f;
+    --shadow:0 8px 30px rgba(0,0,0,.4);
+  }
+  body.light{
+    --bg:#f4f6fa;
+    --bg-grad:radial-gradient(circle at 20% -10%, #e3ecff 0%, #f4f6fa 45%);
+    --panel:#ffffff;
+    --panel2:#f5f7fb;
+    --border:#e1e5ee;
+    --text:#191b1f;
+    --muted:#6c6e78;
+    --accent:#2b5ce0;
+    --accent-grad:linear-gradient(135deg,#2b5ce0 0%,#123f9e 100%);
+    --shadow:0 8px 24px rgba(20,20,40,.08);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg-grad),var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;padding:24px;min-height:100vh;}
+  h1,h2,h3,.brand,button{font-family:'Sora',sans-serif;}
+  .wrap{max-width:1100px;margin:0 auto;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+  .brand{font-size:19px;font-weight:700;background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .sub{color:var(--muted);font-size:13px;margin-top:2px;font-family:'Inter',sans-serif;}
+  .icon-btn{background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;}
+  .icon-btn:hover{border-color:var(--accent);}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px;box-shadow:var(--shadow);}
+  label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
+  input,select{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:9px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;font-family:'Inter',sans-serif;}
+  input:focus,select:focus{border-color:var(--accent);}
+  .btn-primary{background:var(--accent-grad);border:none;color:#fff;padding:13px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;width:100%;}
+  .btn-primary:hover{filter:brightness(1.08);}
+  .mini-btn{background:var(--panel2);border:1px solid var(--border);color:var(--accent);border-radius:7px;padding:7px 12px;font-size:12px;cursor:pointer;font-weight:600;}
+
+  .tab-bar{display:flex;gap:8px;margin-bottom:18px;max-width:420px;}
+  .tab-btn{flex:1;background:var(--panel);border:1px solid var(--border);color:var(--muted);padding:11px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:var(--shadow);}
+  .tab-btn.active{background:var(--accent-grad);color:#fff;border-color:transparent;}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  thead th{text-align:left;padding:9px 10px;font-size:10.5px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);}
+  tbody td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  .qtd-input{width:80px;padding:7px 8px;font-size:12.5px;text-align:center;}
+  .num{text-align:center;}
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:700;}
+  .badge-ok{background:rgba(56,226,168,.15);color:var(--ok);}
+  .badge-repor{background:rgba(232,193,79,.15);color:var(--repor);}
+  .badge-urgente{background:rgba(255,159,67,.15);color:var(--urgente);}
+  .badge-critico{background:rgba(255,107,111,.18);color:var(--critico);}
+  .dot{width:7px;height:7px;border-radius:50%;background:currentColor;}
+
+  .config-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+  .config-item{flex:1;min-width:160px;}
+  .config-item input{text-align:center;}
+
+  .alert-summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+  .alert-chip{border-radius:10px;padding:10px 14px;font-size:12.5px;font-weight:700;flex:1;min-width:150px;text-align:center;}
+
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center;z-index:60;padding:20px;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:22px;width:92%;max-width:520px;max-height:82vh;overflow-y:auto;box-shadow:var(--shadow);}
+  .modal h3{margin:0 0 14px;}
+  .modal-add-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .modal-add-row button{background:var(--accent-grad);border:none;color:#fff;border-radius:9px;padding:0 14px;cursor:pointer;font-weight:600;}
+  .list-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:12.5px;background:var(--panel2);}
+  .list-item button{background:transparent;border:1px solid var(--border);color:var(--critico);border-radius:6px;padding:5px 9px;font-size:11px;cursor:pointer;}
+  .modal-close{width:100%;margin-top:6px;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:11px;border-radius:9px;cursor:pointer;font-weight:600;}
+  .empty-msg{color:var(--muted);font-size:12px;text-align:center;padding:14px 0;}
+  .error-box{max-width:480px;margin:80px auto;text-align:center;}
+  .hist-line{font-size:11.5px;color:var(--muted);margin-bottom:14px;}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="mainApp" style="display:none;">
+  <div class="topbar">
+    <div>
+      <div class="brand" id="brandTitle">Controle de Consumíveis</div>
+      <div class="sub" id="topSub">-</div>
+    </div>
+    <button class="icon-btn" id="themeToggle" onclick="toggleTheme()">🌙</button>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabPreencherBtn" onclick="showTab('preencher')">📝 Preencher</button>
+    <button class="tab-btn" id="tabPainelBtn" onclick="showTab('painel')">📊 Meu Painel</button>
+  </div>
+
+  <div id="panelPreencher"></div>
+  <div id="panelPainel" style="display:none;"></div>
+</div>
+
+<div class="error-box" id="errorBox" style="display:none;">
+  <h2>Link inválido</h2>
+  <p style="color:var(--muted);">Esse link não tem o ponto de venda identificado. Confirme se copiou a URL completa (precisa terminar com <code>?pdv=NOME</code>).</p>
+</div>
+
+<div class="overlay" id="overlayProdutos">
+  <div class="modal">
+    <h3>Produtos / consumíveis cadastrados</h3>
+    <div class="sub" style="margin-bottom:12px;">A proporção é "quantidade usada por venda". Ex: 1 = um por venda, 0.3 = um a cada ~3 vendas, 3 = três por venda.</div>
+    <div class="modal-add-row">
+      <input id="novoProdCod" placeholder="CÓD" style="max-width:80px;">
+      <input id="novoProdNome" placeholder="PRODUTO" style="flex:2;min-width:140px;">
+      <input id="novoProdRatio" placeholder="PROPORÇÃO" type="number" step="0.1" style="max-width:110px;">
+      <input id="novoProdLote" placeholder="TAM. LOTE (opcional)" type="number" style="max-width:150px;">
+      <input id="novoProdNomeLote" placeholder="NOME (lote/resma)" style="max-width:150px;">
+      <button onclick="addProdutoConsumivel()">Adicionar</button>
+    </div>
+    <div id="listaProdutosConsumiveis"></div>
+    <button class="modal-close" onclick="closeModal('overlayProdutos')">Fechar</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://fevhyllvfhvzzfhwyjuk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZldmh5bGx2Zmh2enpmaHd5anVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NzEyMTcsImV4cCI6MjA5NDQ0NzIxN30.GJRgEKW1bVWX1957_bKCTO6aVmR_rXWRCmo9-ZJDPiE';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwybvwG4dcrd3fwfZSK-TDYes6Ud3b5Mf0J-V9YOXt_3JUNuYgDnOlBUJQmZLTtOQGp/exec';
+
+let produtosCache = [];
+let configCache = { dias_analisados: 15, dias_cobertura_desejada: 15, estoque_seguranca_pct: 20 };
+let pdvAtual = null;
+
+/* ================= THEME ================= */
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  document.getElementById('themeToggle').textContent = document.body.classList.contains('light') ? '☀️' : '🌙';
+  localStorage.setItem('consumiveis_theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+(function(){ if(localStorage.getItem('consumiveis_theme')==='light'){ document.body.classList.add('light'); } })();
+
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+/* ================= TABS ================= */
+function showTab(tab){
+  document.getElementById('panelPreencher').style.display = tab === 'preencher' ? 'block' : 'none';
+  document.getElementById('panelPainel').style.display = tab === 'painel' ? 'block' : 'none';
+  document.getElementById('tabPreencherBtn').classList.toggle('active', tab === 'preencher');
+  document.getElementById('tabPainelBtn').classList.toggle('active', tab === 'painel');
+  if(tab === 'painel') renderMeuPainel();
+}
+
+/* ================= CARGA INICIAL ================= */
+async function carregarTudo(){
+  const [{ data: p }, { data: c }] = await Promise.all([
+    sb.from('consumiveis_produtos').select('*').order('ordem'),
+    sb.from('consumiveis_config').select('*')
+  ]);
+  produtosCache = p || [];
+  if(c){ c.forEach(row => { configCache[row.chave] = Number(row.valor); }); }
+}
+
+/* ================= PRODUTOS (cadastro) ================= */
+function openProdutosConsumiveis(){ renderProdutosConsumiveis(); document.getElementById('overlayProdutos').classList.add('open'); }
+function renderProdutosConsumiveis(){
+  const c = document.getElementById('listaProdutosConsumiveis');
+  if(produtosCache.length === 0){ c.innerHTML = '<div class="empty-msg">Nenhum produto cadastrado ainda.</div>'; return; }
+  c.innerHTML = produtosCache.map(p => `
+    <div class="list-item">
+      <span>${p.codigo} — ${p.produto} (${p.ratio_por_venda}x/venda${p.tamanho_lote ? `, ${p.tamanho_lote}/${p.nome_lote || 'lote'}` : ''})</span>
+      <button onclick="delProdutoConsumivel('${p.codigo.replace(/'/g,"\\'")}')">Remover</button>
+    </div>
+  `).join('');
+}
+async function addProdutoConsumivel(){
+  const codigo = document.getElementById('novoProdCod').value.trim();
+  const produto = document.getElementById('novoProdNome').value.trim();
+  const ratio = parseFloat(document.getElementById('novoProdRatio').value) || 1;
+  const tamanho_lote = parseFloat(document.getElementById('novoProdLote').value) || null;
+  const nome_lote = document.getElementById('novoProdNomeLote').value.trim() || 'lote';
+  if(!codigo || !produto) return;
+  await sb.from('consumiveis_produtos').upsert({ codigo, produto, ratio_por_venda: ratio, tamanho_lote, nome_lote, ordem: produtosCache.length + 1 });
+  document.getElementById('novoProdCod').value = '';
+  document.getElementById('novoProdNome').value = '';
+  document.getElementById('novoProdRatio').value = '';
+  document.getElementById('novoProdLote').value = '';
+  document.getElementById('novoProdNomeLote').value = '';
+  await carregarTudo();
+  renderProdutosConsumiveis();
+  renderLinhasProdutos();
+}
+async function delProdutoConsumivel(codigo){
+  await sb.from('consumiveis_produtos').delete().eq('codigo', codigo);
+  await carregarTudo();
+  renderProdutosConsumiveis();
+  renderLinhasProdutos();
+}
+
+/* ================= CÁLCULO (mesma lógica da planilha) ================= */
+function calcularLinha(produto, qtdEstoque, totalVendas){
+  const consumoEstimado = totalVendas * produto.ratio_por_venda;
+  const mediaDia = configCache.dias_analisados > 0 ? consumoEstimado / configCache.dias_analisados : 0;
+  const coberturaDesejada = mediaDia * configCache.dias_cobertura_desejada * (1 + configCache.estoque_seguranca_pct / 100);
+  const qtdSugerida = Math.max(0, Math.round(coberturaDesejada - qtdEstoque));
+  let situacao;
+  if(qtdEstoque <= 0) situacao = 'CRITICO';
+  else if(coberturaDesejada > 0 && (qtdEstoque / coberturaDesejada) < 0.34) situacao = 'URGENTE';
+  else if(qtdSugerida > 0) situacao = 'REPOR';
+  else situacao = 'OK';
+  return { consumoEstimado, mediaDia, coberturaDesejada, qtdSugerida, situacao };
+}
+function badgeSituacao(situacao){
+  const map = {
+    OK: ['badge-ok', 'OK'],
+    REPOR: ['badge-repor', 'REPOR'],
+    URGENTE: ['badge-urgente', 'URGENTE'],
+    CRITICO: ['badge-critico', 'CRÍTICO']
+  };
+  const [cls, label] = map[situacao];
+  return `<span class="badge ${cls}"><span class="dot"></span>${label}</span>`;
+}
+function formatarLote(produto, qtdSugerida){
+  if(!produto.tamanho_lote || produto.tamanho_lote <= 0 || qtdSugerida <= 0) return '';
+  const qtdLotes = Math.ceil(qtdSugerida / produto.tamanho_lote);
+  const nome = produto.nome_lote || 'lote';
+  const plural = qtdLotes > 1 ? (nome.endsWith('a') ? nome + 's' : nome + 's') : nome;
+  return ` <span style="color:var(--muted);font-size:11px;">(${qtdLotes} ${plural})</span>`;
+}
+
+/* ================= FORMULÁRIO SEMANAL ================= */
+function renderFormularioSemanal(){
+  const el = document.getElementById('panelPreencher');
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  el.innerHTML = `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <h2 style="font-size:15px;margin:0;">Painel de Reposição</h2>
+      </div>
+      <div class="config-row">
+        <div class="config-item">
+          <label>Data</label>
+          <input value="${hoje}" disabled>
+        </div>
+        <div class="config-item">
+          <label>Total de vendas (últimos ${configCache.dias_analisados} dias)</label>
+          <input id="totalVendas" type="number" min="0" placeholder="Ex: 486" oninput="recalcularTabela()">
+        </div>
+        <div class="config-item">
+          <label>Dias de cobertura desejada</label>
+          <input value="${configCache.dias_cobertura_desejada}" disabled>
+        </div>
+        <div class="config-item">
+          <label>Estoque de segurança</label>
+          <input value="${configCache.estoque_seguranca_pct}%" disabled>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th><th>Produto</th><th>Qtd Estoque</th><th>Consumo Est.</th><th>Média/dia</th><th>Cobertura</th><th>Sugestão Pedido</th><th>Situação</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaProdutos"></tbody>
+        </table>
+      </div>
+      <button class="btn-primary" style="margin-top:18px;" onclick="salvarSemanal()">💾 Salvar contagem</button>
+      <div id="statusSalvar" style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px;"></div>
+    </div>
+  `;
+  renderLinhasProdutos();
+}
+function renderLinhasProdutos(){
+  const tbody = document.getElementById('tabelaProdutos');
+  if(!tbody) return;
+  if(produtosCache.length === 0){
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-msg">Nenhum produto cadastrado. Clique em "Gerenciar produtos".</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = produtosCache.map(p => `
+    <tr id="linha_${p.codigo}">
+      <td>${p.codigo}</td>
+      <td>${p.produto}</td>
+      <td><input class="qtd-input" type="number" min="0" placeholder="0" data-codigo="${p.codigo}" oninput="recalcularTabela()"></td>
+      <td class="num" data-campo="consumo">–</td>
+      <td class="num" data-campo="media">–</td>
+      <td class="num" data-campo="cobertura">–</td>
+      <td class="num" data-campo="sugestao">–</td>
+      <td data-campo="situacao">–</td>
+    </tr>
+  `).join('');
+}
+function recalcularTabela(){
+  const totalVendas = parseFloat(document.getElementById('totalVendas')?.value) || 0;
+  produtosCache.forEach(p => {
+    const linha = document.getElementById('linha_' + p.codigo);
+    if(!linha) return;
+    const qtdEstoque = parseFloat(linha.querySelector('.qtd-input').value) || 0;
+    const r = calcularLinha(p, qtdEstoque, totalVendas);
+    linha.querySelector('[data-campo="consumo"]').textContent = r.consumoEstimado.toFixed(1);
+    linha.querySelector('[data-campo="media"]').textContent = r.mediaDia.toFixed(1);
+    linha.querySelector('[data-campo="cobertura"]').textContent = r.coberturaDesejada.toFixed(0);
+    linha.querySelector('[data-campo="sugestao"]').innerHTML = r.qtdSugerida + formatarLote(p, r.qtdSugerida);
+    linha.querySelector('[data-campo="situacao"]').innerHTML = badgeSituacao(r.situacao);
+  });
+}
+function notificarWhatsapp(){
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('COLE_AQUI')) return;
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({ pdv: pdvAtual })
+  }).catch(e => console.error('Falha ao notificar WhatsApp:', e));
+}
+async function salvarSemanal(){
+  const totalVendas = parseFloat(document.getElementById('totalVendas')?.value);
+  if(!totalVendas && totalVendas !== 0){ alert('Preencha o total de vendas.'); return; }
+  const estoques = produtosCache.map(p => {
+    const linha = document.getElementById('linha_' + p.codigo);
+    const qtdEstoque = parseFloat(linha.querySelector('.qtd-input').value) || 0;
+    return { codigo: p.codigo, qtd_estoque: qtdEstoque };
+  });
+  const status = document.getElementById('statusSalvar');
+  status.textContent = 'Salvando...';
+  try{
+    const { error } = await sb.from('consumiveis_semanal').insert({
+      quiosque: pdvAtual,
+      semana_referencia: new Date().toISOString().slice(0,10),
+      total_vendas: totalVendas,
+      estoques
+    });
+    if(error) throw error;
+    status.textContent = '✅ Salvo com sucesso às ' + new Date().toLocaleTimeString('pt-BR');
+    notificarWhatsapp();
+  }catch(e){
+    console.error(e);
+    status.textContent = 'Erro ao salvar. Tente novamente.';
+  }
+}
+
+/* ================= MEU PAINEL (somente este PDV) ================= */
+async function renderMeuPainel(){
+  const el = document.getElementById('panelPainel');
+  el.innerHTML = `<div class="card"><div class="empty-msg">Carregando...</div></div>`;
+
+  const { data, error } = await sb.from('consumiveis_semanal')
+    .select('*').eq('quiosque', pdvAtual)
+    .order('criado_em', { ascending: false }).limit(10);
+
+  if(error || !data || data.length === 0){
+    el.innerHTML = `<div class="card"><div class="empty-msg">Você ainda não salvou nenhuma contagem. Preencha na aba "Preencher".</div></div>`;
+    return;
+  }
+
+  const ultimo = data[0];
+  let totalCritico = 0, totalUrgente = 0, totalRepor = 0;
+  const linhas = produtosCache.map(p => {
+    const est = (ultimo.estoques || []).find(e => e.codigo === p.codigo);
+    const qtdEstoque = est ? Number(est.qtd_estoque) : 0;
+    const r = calcularLinha(p, qtdEstoque, Number(ultimo.total_vendas));
+    if(r.situacao === 'CRITICO') totalCritico++;
+    else if(r.situacao === 'URGENTE') totalUrgente++;
+    else if(r.situacao === 'REPOR') totalRepor++;
+    return `
+      <tr>
+        <td>${p.codigo}</td><td>${p.produto}</td>
+        <td class="num">${qtdEstoque}</td>
+        <td class="num">${r.qtdSugerida}${formatarLote(p, r.qtdSugerida)}</td>
+        <td>${badgeSituacao(r.situacao)}</td>
+      </tr>`;
+  }).join('');
+
+  const historico = data.slice(1).map(h =>
+    `${new Date(h.criado_em).toLocaleDateString('pt-BR')} — vendas: ${h.total_vendas}`
+  ).join(' · ');
+
+  el.innerHTML = `
+    <div class="alert-summary">
+      <div class="alert-chip badge-critico">🔴 ${totalCritico} crítico(s)</div>
+      <div class="alert-chip badge-urgente">🟠 ${totalUrgente} urgente(s)</div>
+      <div class="alert-chip badge-repor">🟡 ${totalRepor} pra repor</div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <h2 style="font-size:15px;margin:0;">Última contagem</h2>
+        <span class="sub">${new Date(ultimo.criado_em).toLocaleString('pt-BR')} · vendas: ${ultimo.total_vendas}</span>
+      </div>
+      ${historico ? `<div class="hist-line">Anteriores: ${historico}</div>` : ''}
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>Código</th><th>Produto</th><th>Estoque</th><th>Sugestão</th><th>Situação</th></tr></thead>
+          <tbody>${linhas}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+/* ================= INIT: identifica o PDV pela URL ================= */
+async function init(){
+  const params = new URLSearchParams(window.location.search);
+
+  if(params.get('admin') === '1'){
+    await carregarTudo();
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('errorBox').style.display = 'none';
+    document.body.insertAdjacentHTML('beforeend', `
+      <div class="wrap" style="max-width:640px;">
+        <div class="brand" style="margin-bottom:4px;">Administração · Produtos</div>
+        <div class="sub" style="margin-bottom:18px;">Essa tela não é visível pra ninguém a menos que acesse este link diretamente.</div>
+      </div>
+    `);
+    openProdutosConsumiveis();
+    return;
+  }
+
+  const pdv = params.get('pdv');
+  if(!pdv){
+    document.getElementById('errorBox').style.display = 'block';
+    return;
+  }
+  pdvAtual = pdv.trim();
+  document.getElementById('topSub').textContent = pdvAtual;
+  document.title = pdvAtual + ' · Consumíveis';
+  document.getElementById('mainApp').style.display = 'block';
+
+  await carregarTudo();
+  // garante que o PDV fica registrado no cadastro (não precisa aparecer em tela nenhuma)
+  sb.from('consumiveis_quiosques').upsert({ nome: pdvAtual }).then(()=>{});
+  renderFormularioSemanal();
+}
+init();
+</script>
+</body>
+</html>
